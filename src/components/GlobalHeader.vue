@@ -26,6 +26,7 @@
           上传图片
         </a-button>
       </a-col>
+
       <a-col flex="150px">
         <div class="user-login-status">
           <div v-if="loginUserStore.loginUser.id">
@@ -50,15 +51,18 @@
                 {{ loginUserStore.loginUser.userName ?? '无名' }}
               </div>
               <template #overlay>
-                <a-menu @click="doLogout">
+                <a-menu >
                   <a-menu-item key="1">
+                    <router-link to="/my_space">
+                      <UserOutlined />
+                      我的空间
+                    </router-link>
+                  </a-menu-item>
+                  <a-menu-item key="2" @click="doLogout">
                     <LogoutOutlined />
                     退出登录
                   </a-menu-item>
                 </a-menu>
-              </template>
-              <template #icon>
-                <UserOutlined />
               </template>
             </a-dropdown>
           </div>
@@ -73,11 +77,10 @@
 
 <script lang="ts" setup>
 import { computed, h, ref } from 'vue'
-import { HomeOutlined, TeamOutlined, PictureOutlined, PlusOutlined } from '@ant-design/icons-vue'
+import { HomeOutlined, TeamOutlined, PictureOutlined, PlusOutlined ,TableOutlined,UserOutlined, LogoutOutlined } from '@ant-design/icons-vue'
 import { MenuProps, message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
-import { UserOutlined, LogoutOutlined } from '@ant-design/icons-vue'
 import { userLogoutUsingPost } from '@/api/userController.ts'
 import AddPictureView from '@/views/AddPictureView.vue'
 
@@ -104,6 +107,12 @@ const originItems = [
     icon: () => h(PictureOutlined),
     label: '图片管理',
     title: '图片管理',
+  },
+  {
+    key: '/admin/space/manage',
+    icon: () => h(TableOutlined),
+    label: '空间管理',
+    title: '空间管理',
   },
 ]
 
@@ -160,7 +169,7 @@ const router = useRouter()
 // 跳转到图片添加页面
 const doAddPicture = () => {
   router.push({
-    path: '/add_picture',
+    path: '/addPicture',
   })
 }
 

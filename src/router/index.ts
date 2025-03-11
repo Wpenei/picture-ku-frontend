@@ -4,10 +4,13 @@ import RegisterView from '@/views/user/RegisterView.vue'
 import LoginView from '@/views/user/LoginView.vue'
 import PictureManageView from '@/views/admin/PictureManageView.vue'
 import UserManageView from '@/views/admin/UserManageView.vue'
-import AdminManageView from '@/views/admin/UserManageView.vue'
 import AddPictureView from '@/views/AddPictureView.vue'
 import PictureDetailView from '@/views/PictureDetailView.vue'
 import BatchAddPictureView from '@/views/BatchAddPictureView.vue'
+import SpaceManageView from '@/views/admin/SpaceManageView.vue'
+import AddSpaceView from '@/views/AddSpaceView.vue'
+import MySpaceView from '@/views/MySpaceView.vue'
+import SpaceDetailView from '@/views/SpaceDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,12 +41,12 @@ const router = createRouter({
       component: PictureManageView
     },
     {
-      path: '/add_picture',
+      path: '/addPicture',
       name: '创建图片',
       component: AddPictureView
     },
     {
-      path: '/add_picture/batch',
+      path: '/addPicture/batch',
       name: '批量添加图片',
       component: BatchAddPictureView
     },
@@ -51,6 +54,27 @@ const router = createRouter({
       path: '/picture/:id',
       name: '图片详情',
       component: PictureDetailView,
+      props: true,
+    },
+    {
+      path: '/admin/space/manage',
+      name: '空间管理',
+      component: SpaceManageView
+    },
+    {
+      path: '/addSpace',
+      name: '创建空间',
+      component: AddSpaceView
+    },
+    {
+      path: '/my_space',
+      name: '我的空间',
+      component: MySpaceView
+    },
+    {
+      path: '/space/:id',
+      name: '空间详情',
+      component: SpaceDetailView,
       props: true,
     },
     {

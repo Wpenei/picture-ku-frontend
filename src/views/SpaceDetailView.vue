@@ -1,24 +1,34 @@
 <template>
-  <div id="homeView">
-    <!-- 搜索 -->
-    <div class="search">
-      <a-input-search
-        v-model:value="searchParams.searchText"
-        placeholder="从海量图片中搜索"
-        enter-button="搜索"
-        @search="doSearch"
-        size="large"
-        allowClear="true"
-        :loading="loading"
+  <div id="spaceDetail">
+    <!-- 空间信息 -->
+    <a-flex justify="space-between">
+      <h2>{{ space.spaceName }}（私有空间）</h2>
+      <a-button type="primary" :href="`/addPicture?spaceId=${space.id}`"> + 上传图片 </a-button>
+    </a-flex>
+    <a-flex justify="flex-start" align="center">
+      <a-typography-paragraph style="margin-right: 16px">
+        占用空间:{{ formatSize(space.totalSize) }}/{{ formatSize(space.maxSize) }}
+      </a-typography-paragraph>
+      <a-progress
+        :stroke-color="
+          percent >= 75
+            ? { '0%': '#ff4d4f', '100%': '#cf1322' }
+            : { '0%': '#2a7fff', '100%': '#0052cc' }
+        "
+        :percent="percent"
+        style="width: 50%"
+        stroke-linecap="round"
+        :size="['100%', 10]"
       />
-    </div>
+    </a-flex>
+
     <!-- 分类 -->
     <a-tabs v-model:activeKey="selectedCategory" @change="doSearch">
       <a-tab-pane key="all" tab="全部" />
       <a-tab-pane v-for="category in categoryList" :key="category" :tab="category" />
     </a-tabs>
     <!-- 标签 -->
-    <div class="tag-bar">
+    <div class="tag-bar" style="margin-bottom: 16px">
       <span style="margin-right: 8px">标签：</span>
       <a-space :size="[0, 8]" wrap>
         <a-checkable-tag
@@ -32,34 +42,61 @@
       </a-space>
     </div>
     <!-- 图片展示 -->
-    <PictureList :dataList="dataList" :loading="loading" />
+    <PictureList :dataList="dataList" :loading="loading" showOp :onReload="fetchData"/>
     <!-- 分页 -->
     <a-pagination
-      style="text-align: right;margin-bottom: 16px"
+      style="text-align: right; margin-bottom: 16px"
       v-model:current="searchParams.current"
       v-model:pageSize="searchParams.pageSize"
       @change="onPageChange"
       :total="total"
+      :show-total="() => `图片总数 ${total}/${space.maxCount}`"
     />
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+// 数据
+import { onMounted, reactive, ref } from 'vue'
 import {
   listPictureTagCategoryUsingGet,
   listPictureVoByPageUsingPost,
-  listPictureVoByPageWithCacheUsingPost,
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
+import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import PictureList from '@/components/PictureList.vue'
+import { formatSize } from '@/utils'
 
-// 数据
+const props = defineProps<{
+  id: number
+}>()
+// 获取空间详情
+const space = ref<API.SpaceVO>({})
+const percent = (space.value.totalSize / space.value.maxSize) * 100
+// const percent = 50
+const fetchSpaceDetail = async () => {
+  try {
+    const res = await getSpaceVoByIdUsingGet({
+      id: props.id,
+    })
+    if (res.data.code === 0 && res.data.data) {
+      space.value = res.data.data
+    } else {
+      message.error('获取空间详情失败，' + res.data.message)
+    }
+  } catch (error: any) {
+    message.error('获取空间详情失败，' + error.message)
+  }
+}
+// 页面加载时获取数据，请求一次
+onMounted(() => {
+  // 获取空间详情
+  fetchSpaceDetail()
+})
+
 const dataList = ref([])
 const total = ref(0)
 const loading = ref(false)
-
 // 搜索条件
 const searchParams = reactive<API.PictureQueryRequest>({
   current: 1,
@@ -74,6 +111,7 @@ const fetchData = async () => {
   const params = {
     ...searchParams,
     tags: [] as string[],
+    spaceId: props.id,
   }
   if (selectedCategory.value !== 'all') {
     params.category = selectedCategory.value
@@ -88,20 +126,15 @@ const fetchData = async () => {
     dataList.value = res.data.data.records ?? []
     total.value = res.data.data.total ?? 0
   } else {
-    message.error('获取数据失败，' + res.data.message)
+    message.error('获取图片数据失败，' + res.data.message)
   }
   loading.value = false
 }
 // 页面加载时获取数据，请求一次
 onMounted(() => {
+  // 获取空间图片数据
   fetchData()
 })
-// 分页改变时触发
-const onPageChange =  (page: number, pageSize: number) => {
-  searchParams.current = page
-  searchParams.pageSize = pageSize
-  fetchData()
-}
 // 搜索数据
 const doSearch = () => {
   loading.value = true
@@ -109,6 +142,12 @@ const doSearch = () => {
   searchParams.current = 1
   fetchData()
   loading.value = false
+}
+// 分页改变时触发
+const onPageChange = (page: number, pageSize: number) => {
+  searchParams.current = page
+  searchParams.pageSize = pageSize
+  fetchData()
 }
 // 标签和分类列表
 const categoryList = ref<string[]>([])
@@ -130,21 +169,13 @@ const getTagCategoryOptions = async () => {
 }
 
 onMounted(() => {
+  // 获取标签和分类列表
   getTagCategoryOptions()
 })
 </script>
 
 <style scoped>
-#homeView {
-  padding: 16px;
-}
-
-#homeView .search {
-  max-width: 520px;
-  margin: 0 auto 16px;
-}
-
-#homeView .tag-bar {
-  margin-bottom: 24px;
+#spaceDetail :deep(.ant-typography) {
+  margin-bottom: 0 !important;
 }
 </style>

@@ -4,13 +4,13 @@
       <a-flex justify="space-between">
         <h2>图片管理</h2>
         <a-space wrap>
-          <a-button type="primary" href="/add_picture" target="_blank">
+          <a-button type="primary" href="/addPicture" target="_blank">
             <template #icon>
               <PlusOutlined />
             </template>
             添加图片
           </a-button>
-          <a-button href="/add_picture/batch" >
+          <a-button href="/addPicture/batch" >
             <template #icon>
               <PlusOutlined />
             </template>
@@ -47,6 +47,7 @@
             v-model:value="searchParams.reviewStatus"
             :options="PIC_REVIEW_STATUS_OPTIONS"
             placeholder="请选择审核状态"
+            allow-clear
             style="min-width: 180px"
           />
         </a-form-item>
@@ -109,7 +110,7 @@
             >
               拒绝
             </a-button>
-            <a-button  :href="`/add_picture?id=${record.id}`" target="_blank">
+            <a-button  :href="`/addPicture?id=${record.id}`" target="_blank">
               编辑
             </a-button>
             <a-button danger @click="showDeleteConfirm(record.id)">删除</a-button>
@@ -142,6 +143,7 @@ const columns = [
   {
     title: '图片',
     dataIndex: 'url',
+    width: 150,
   },
   {
     title: '名称',
@@ -187,7 +189,7 @@ const columns = [
   },
 ]
 // 定义数据
-const dataList = ref<API.Picture[]>([])
+const dataList = ref<[]>([])
 const total = ref(0)
 // 搜索条件
 const searchParams = reactive<API.PictureQueryRequest>({
@@ -200,6 +202,7 @@ const searchParams = reactive<API.PictureQueryRequest>({
 const fetchData = async () => {
   const res = await listPictureByPageUsingPost({
     ...searchParams,
+    nullSpaceId: true,
   })
   if (res.data.code === 0 && res.data.data) {
     console.log(res.data.data)

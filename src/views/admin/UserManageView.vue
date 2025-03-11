@@ -153,7 +153,7 @@ const columns = [
   },
 ]
 // 数据
-const dataList = ref<API.UserVO[]>([])
+const dataList = ref<[]>([])
 const total = ref(0)
 // 搜索条件
 const searchParams = reactive<API.UserQueryRequest>({
