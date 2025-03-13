@@ -44,8 +44,21 @@
             <a-descriptions-item label="大小">
               {{ formatSize(picture.picSize) }}
             </a-descriptions-item>
-            <a-descriptions-item >
+            <a-descriptions-item label="主色调">
+              <a-space>
+                {{ picture.picColor ?? '-' }}
+                <div
+                  v-if="picture.picColor"
+                  :style="{
+                    backgroundColor: toHexColor(picture.picColor),
+                    width: '16px',
+                    height: '16px',
+                  }"
+                />
+              </a-space>
+            </a-descriptions-item>
 
+            <a-descriptions-item >
               <a-space wrap>
                 <a-button type="primary" @click="doDownload">
                   免费下载
@@ -53,6 +66,17 @@
                     <DownloadOutlined />
                   </template>
                 </a-button>
+                <ShareModal ref="shareModalRef" :link="shareLink"/>
+                <a-button type="primary" ghost @click="doShare(picture)">
+                  立即分享
+                  <template #icon>
+                    <share-alt-outlined />
+                  </template>
+                </a-button>
+              </a-space>
+            </a-descriptions-item>
+            <a-descriptions-item>
+              <a-space wrap>
                 <a-button v-if="canEdit" type="default" @click="doEdit">
                   编辑
                   <template #icon>
@@ -75,15 +99,16 @@
 </template>
 
 <script setup lang="ts">
-import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue'
+import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined,DownloadOutlined,ShareAltOutlined } from '@ant-design/icons-vue'
 import { deletePictureUsingDelete, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
 import { computed, createVNode, onMounted, ref } from 'vue'
 import { message, Modal } from 'ant-design-vue'
-import { downloadImage, formatSize } from '../utils'
+import { downloadImage, formatSize, toHexColor } from '../utils'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import router from '@/router'
 import * as url from 'url'
 import { PIC_REVIEW_STATUS_ENUM } from '@/constants/picture.ts'
+import ShareModal from '@/components/ShareModal.vue'
 
 const props = defineProps<{
   id: string | number
@@ -125,15 +150,15 @@ const canEdit = computed(() => {
 // 编辑
 const doEdit = () => {
   router.push({
-    path:"/addPicture",
-    query:{
-      id:picture.value.id,
-      spaceId:picture.value.spaceId
-    }
+    path: '/addPicture',
+    query: {
+      id: picture.value.id,
+      spaceId: picture.value.spaceId,
+    },
   })
 }
 // 删除
-const doDelete = async (id :number) => {
+const doDelete = async (id: number) => {
   if (!id) {
     return
   }
@@ -168,6 +193,18 @@ const showDeleteConfirm = (id: number) => {
 
 const doDownload = () => {
   downloadImage(picture.value.url)
+}
+
+// 分享弹窗引用
+const shareModalRef = ref()
+// 分享链接地址
+const shareLink = ref<string>()
+// 分享
+const doShare = (picture: API.PictureVO) => {
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.id}`
+  if (shareModalRef.value) {
+    shareModalRef.value.openModal()
+  }
 }
 </script>
 

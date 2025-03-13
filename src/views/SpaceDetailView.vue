@@ -3,7 +3,10 @@
     <!-- 空间信息 -->
     <a-flex justify="space-between">
       <h2>{{ space.spaceName }}（私有空间）</h2>
-      <a-button type="primary" :href="`/addPicture?spaceId=${space.id}`"> + 上传图片 </a-button>
+      <a-space>
+        <a-button type="primary" :href="`/addPicture?spaceId=${space.id}`"> + 上传图片 </a-button>
+        <a-button :icon="h(EditOutlined)" @click="doBatchEdit"> 批量编辑</a-button>
+      </a-space>
     </a-flex>
     <a-flex justify="flex-start" align="center">
       <a-typography-paragraph style="margin-right: 16px">
@@ -21,28 +24,22 @@
         :size="['100%', 10]"
       />
     </a-flex>
+    <BatchEditPictureModal
+      ref="batchEditPictureModalRef"
+      :spaceId="id"
+      :pictureList="dataList"
+      :onSuccess="onBatchEditPictureSuccess"
+    />
 
-    <!-- 分类 -->
-    <a-tabs v-model:activeKey="selectedCategory" @change="doSearch">
-      <a-tab-pane key="all" tab="全部" />
-      <a-tab-pane v-for="category in categoryList" :key="category" :tab="category" />
-    </a-tabs>
-    <!-- 标签 -->
-    <div class="tag-bar" style="margin-bottom: 16px">
-      <span style="margin-right: 8px">标签：</span>
-      <a-space :size="[0, 8]" wrap>
-        <a-checkable-tag
-          v-for="(tag, index) in tagList"
-          :key="tag"
-          v-model:checked="selectedTagList[index]"
-          @change="doSearch"
-        >
-          {{ tag }}
-        </a-checkable-tag>
-      </a-space>
-    </div>
+
+    <!--  图片搜索组件-->
+    <PictureSearchForm :onSearch="onSearch"/>
+    <!-- 按颜色搜索 -->
+    <a-form-item label="按颜色搜索" style="margin-top: 16px">
+      <color-picker format="hex" @pureColorChange="onColorChange" />
+    </a-form-item>
     <!-- 图片展示 -->
-    <PictureList :dataList="dataList" :loading="loading" showOp :onReload="fetchData"/>
+    <PictureList :dataList="dataList" :loading="loading" showOp :onReload="fetchData" style="margin-top: 16px;"/>
     <!-- 分页 -->
     <a-pagination
       style="text-align: right; margin-bottom: 16px"
@@ -57,15 +54,20 @@
 
 <script setup lang="ts">
 // 数据
-import { onMounted, reactive, ref } from 'vue'
+import { h, onMounted, reactive, ref } from 'vue'
 import {
   listPictureTagCategoryUsingGet,
-  listPictureVoByPageUsingPost,
+  listPictureVoByPageUsingPost, searchPictureByColorUsingPost
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import PictureList from '@/components/PictureList.vue'
 import { formatSize } from '@/utils'
+import PictureSearchForm from '@/components/PictureSearchForm.vue'
+import { ColorPicker } from 'vue3-colorpicker'
+import 'vue3-colorpicker/style.css'
+import BatchEditPictureModal from '@/components/BatchEditPictureModal.vue'
+import { EditOutlined } from '@ant-design/icons-vue'
 
 const props = defineProps<{
   id: number
@@ -94,35 +96,32 @@ onMounted(() => {
   fetchSpaceDetail()
 })
 
-const dataList = ref([])
-const total = ref(0)
-const loading = ref(false)
-// 搜索条件
-const searchParams = reactive<API.PictureQueryRequest>({
-  current: 1,
-  pageSize: 12,
-  sortField: 'createTime',
-  sortOrder: 'descend',
-})
+// 分享弹窗引用
+const batchEditPictureModalRef = ref()
+
+// 批量编辑成功后，刷新数据
+const onBatchEditPictureSuccess = () => {
+  fetchData()
+}
+// 打开批量编辑弹窗
+const doBatchEdit = () => {
+  if (batchEditPictureModalRef.value) {
+    batchEditPictureModalRef.value.openModal()
+  }
+}
+
+
+
 // 获取数据
 const fetchData = async () => {
   loading.value = true
   // 转换搜索参数
   const params = {
-    ...searchParams,
-    tags: [] as string[],
+    ...searchParams.value,
     spaceId: props.id,
   }
-  if (selectedCategory.value !== 'all') {
-    params.category = selectedCategory.value
-  }
-  selectedTagList.value.forEach((useTag, index) => {
-    if (useTag) {
-      params.tags.push(tagList.value[index])
-    }
-  })
   const res = await listPictureVoByPageUsingPost(params)
-  if (res.data.data) {
+  if (res.data.code === 0 && res.data.data) {
     dataList.value = res.data.data.records ?? []
     total.value = res.data.data.total ?? 0
   } else {
@@ -135,46 +134,55 @@ onMounted(() => {
   // 获取空间图片数据
   fetchData()
 })
-// 搜索数据
-const doSearch = () => {
-  loading.value = true
-  // 重置页码
-  searchParams.current = 1
-  fetchData()
-  loading.value = false
-}
-// 分页改变时触发
+
+const dataList = ref([])
+const total = ref(0)
+const loading = ref(false)
+// 搜索条件
+const searchParams = ref<API.PictureQueryRequest>({
+  current: 1,
+  pageSize: 12,
+  sortField: 'createTime',
+  sortOrder: 'descend',
+})
+// 分页参数
 const onPageChange = (page: number, pageSize: number) => {
-  searchParams.current = page
-  searchParams.pageSize = pageSize
+  searchParams.value.current = page
+  searchParams.value.pageSize = pageSize
   fetchData()
 }
-// 标签和分类列表
-const categoryList = ref<string[]>([])
-const selectedCategory = ref<string>('all')
-const tagList = ref<string[]>([])
-const selectedTagList = ref<string[]>([])
-/**
- * 获取标签和分类选项
- * @param values
- */
-const getTagCategoryOptions = async () => {
-  const res = await listPictureTagCategoryUsingGet()
-  if (res.data.code === 0 && res.data.data) {
-    tagList.value = res.data.data.tagList ?? []
-    categoryList.value = res.data.data.categoryList ?? []
-  } else {
-    message.error('获取标签分类列表失败，' + res.data.message)
+// 执行搜索
+const onSearch = (newSearchParams: API.PictureQueryRequest) => {
+  console.log('Received values of form: ', newSearchParams)
+  searchParams.value = {
+    ...searchParams.value,
+    ...newSearchParams,
+    current: 1,
   }
+  fetchData()
 }
 
-onMounted(() => {
-  // 获取标签和分类列表
-  getTagCategoryOptions()
-})
+const onColorChange = async (color: any) => {
+  console.log('color', color)
+  loading.value = true
+  const res = await searchPictureByColorUsingPost({
+    picColor: color,
+    spaceId: props.id,
+  })
+  if (res.data.code === 0 && res.data.data) {
+    dataList.value =res.data.data
+    total.value = res.data.data.length ?? 0
+  } else {
+    message.error('获取数据失败，' + res.data.message)
+  }
+  loading.value = false
+}
 </script>
 
 <style scoped>
+#spaceDetail {
+  margin: 40px 16px;
+}
 #spaceDetail :deep(.ant-typography) {
   margin-bottom: 0 !important;
 }

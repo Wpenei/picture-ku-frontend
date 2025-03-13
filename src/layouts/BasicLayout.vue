@@ -29,7 +29,8 @@ import GlobalSider from '@/components/GlobalSider.vue'
 }
 
 #basicLayout .concent {
-  padding: 40px;
+  padding-left: 12px;
+  padding-right: 12px;
   background: linear-gradient(to right, #fefefe, #fff);
   margin-bottom: 30px;
 }

@@ -28,29 +28,27 @@
                 </a-flex>
               </template>
             </a-card-meta>
+            <ShareModal ref="shareModalRef" :link="shareLink"/>
             <template #actions v-if="showOp">
-              <a-space @click="(e) => doEdit(picture, e)">
-                <edit-outlined />
-                编辑
-              </a-space>
-              <a-space @click="(e) => showDeleteConfirm(picture, e)">
-                <delete-outlined />
-                删除
-              </a-space>
+                <share-alt-outlined @click="(e) => doShare(picture,e)"/>
+                <edit-outlined @click="(e) => doEdit(picture, e)"/>
+                <delete-outlined @click="(e) => showDeleteConfirm(picture, e)"/>
             </template>
           </a-card>
         </a-list-item>
       </template>
     </a-list>
+
   </div>
 </template>
 
 <script lang="ts" setup>
 import router from '@/router'
-import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue'
+import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined ,ShareAltOutlined} from '@ant-design/icons-vue'
 import { deletePictureUsingDelete } from '@/api/pictureController.ts'
 import { message, Modal } from 'ant-design-vue'
-import { createVNode } from 'vue'
+import { createVNode, ref } from 'vue'
+import ShareModal from '@/components/ShareModal.vue'
 
 // 接收传递过来的数据
 interface Props {
@@ -83,6 +81,18 @@ const doEdit = (picture: API.PictureVO, e: any) => {
       spaceId: picture.spaceId,
     },
   })
+}
+// 分享弹窗引用
+const shareModalRef = ref()
+// 分享链接地址
+const shareLink = ref<string>()
+// 分享
+const doShare = (picture: API.PictureVO, e: any) => {
+  e.stopPropagation()
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.id}`
+  if (shareModalRef.value) {
+    shareModalRef.value.openModal()
+  }
 }
 // 删除
 const doDelete = async (picture: API.PictureVO) => {
@@ -122,4 +132,8 @@ const showDeleteConfirm = (picture: API.PictureVO, e: any) => {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+#pictureList :deep(.ant-list-item){
+ padding: 0 !important;
+}
+</style>
