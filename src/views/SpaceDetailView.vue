@@ -4,8 +4,17 @@
     <a-flex justify="space-between">
       <h2>{{ space.spaceName }}（私有空间）</h2>
       <a-space>
-        <a-button type="primary" :href="`/addPicture?spaceId=${space.id}`"> + 上传图片 </a-button>
+        <a-button type="primary" :href="`/addPicture?spaceId=${space.id}`"> + 上传图片</a-button>
         <a-button :icon="h(EditOutlined)" @click="doBatchEdit"> 批量编辑</a-button>
+        <a-button
+          type="primary"
+          ghost
+          :icon="h(BarChartOutlined)"
+          :href="`/space_analyze?spaceId=${id}`"
+          target="_blank"
+        >
+          空间分析
+        </a-button>
       </a-space>
     </a-flex>
     <a-flex justify="flex-start" align="center">
@@ -31,15 +40,20 @@
       :onSuccess="onBatchEditPictureSuccess"
     />
 
-
     <!--  图片搜索组件-->
-    <PictureSearchForm :onSearch="onSearch"/>
+    <PictureSearchForm :onSearch="onSearch" />
     <!-- 按颜色搜索 -->
     <a-form-item label="按颜色搜索" style="margin-top: 16px">
       <color-picker format="hex" @pureColorChange="onColorChange" />
     </a-form-item>
     <!-- 图片展示 -->
-    <PictureList :dataList="dataList" :loading="loading" showOp :onReload="fetchData" style="margin-top: 16px;"/>
+    <PictureList
+      :dataList="dataList"
+      :loading="loading"
+      showOp
+      :onReload="fetchData"
+      style="margin-top: 16px"
+    />
     <!-- 分页 -->
     <a-pagination
       style="text-align: right; margin-bottom: 16px"
@@ -57,7 +71,8 @@
 import { h, onMounted, reactive, ref } from 'vue'
 import {
   listPictureTagCategoryUsingGet,
-  listPictureVoByPageUsingPost, searchPictureByColorUsingPost
+  listPictureVoByPageUsingPost,
+  searchPictureByColorUsingPost,
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
@@ -67,7 +82,7 @@ import PictureSearchForm from '@/components/PictureSearchForm.vue'
 import { ColorPicker } from 'vue3-colorpicker'
 import 'vue3-colorpicker/style.css'
 import BatchEditPictureModal from '@/components/BatchEditPictureModal.vue'
-import { EditOutlined } from '@ant-design/icons-vue'
+import { EditOutlined,BarChartOutlined, } from '@ant-design/icons-vue'
 
 const props = defineProps<{
   id: number
@@ -109,8 +124,6 @@ const doBatchEdit = () => {
     batchEditPictureModalRef.value.openModal()
   }
 }
-
-
 
 // 获取数据
 const fetchData = async () => {
@@ -170,7 +183,7 @@ const onColorChange = async (color: any) => {
     spaceId: props.id,
   })
   if (res.data.code === 0 && res.data.data) {
-    dataList.value =res.data.data
+    dataList.value = res.data.data
     total.value = res.data.data.length ?? 0
   } else {
     message.error('获取数据失败，' + res.data.message)
@@ -183,6 +196,7 @@ const onColorChange = async (color: any) => {
 #spaceDetail {
   margin: 40px 16px;
 }
+
 #spaceDetail :deep(.ant-typography) {
   margin-bottom: 0 !important;
 }

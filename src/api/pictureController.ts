@@ -127,17 +127,14 @@ export async function createOutPaintingTaskUsingPost(
   body: API.CreatePictureOutPaintingTaskRequest,
   options?: { [key: string]: any }
 ) {
-  return request<API.BaseResponseCreateOutPaintingTaskResponse_>(
-    '/api/picture/out_painting/create_task',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      data: body,
-      ...(options || {}),
-    }
-  )
+  return request<API.BaseResponseCreateTaskResponse_>('/api/picture/out_painting/create_task', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
 }
 
 /** getOutPaintingTask GET /api/picture/out_painting/get_task */
