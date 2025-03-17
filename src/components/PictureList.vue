@@ -31,8 +31,8 @@
             <ShareModal ref="shareModalRef" :link="shareLink"/>
             <template #actions v-if="showOp">
                 <share-alt-outlined @click="(e) => doShare(picture,e)"/>
-                <edit-outlined @click="(e) => doEdit(picture, e)"/>
-                <delete-outlined @click="(e) => showDeleteConfirm(picture, e)"/>
+                <edit-outlined v-if="canEdit" @click="(e) => doEdit(picture, e)"/>
+                <delete-outlined v-if="canDelete" @click="(e) => showDeleteConfirm(picture, e)"/>
             </template>
           </a-card>
         </a-list-item>
@@ -47,7 +47,7 @@ import router from '@/router'
 import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined ,ShareAltOutlined} from '@ant-design/icons-vue'
 import { deletePictureUsingDelete } from '@/api/pictureController.ts'
 import { message, Modal } from 'ant-design-vue'
-import { createVNode, ref } from 'vue'
+import {  createVNode, ref } from 'vue'
 import ShareModal from '@/components/ShareModal.vue'
 
 // 接收传递过来的数据
@@ -56,13 +56,18 @@ interface Props {
   loading?: boolean
   showOp?: boolean
   onReload?: () => void
+  canEdit?: boolean
+  canDelete?: boolean
 }
+
 
 // 添加默认值
 const props = withDefaults(defineProps<Props>(), {
   dataList: () => [],
   loading: false,
   showOp: false,
+  canEdit: false,
+  canDelete: false
 })
 // 跳转至图片详情页
 const doClickPicture = (picture: API.PictureVO) => {

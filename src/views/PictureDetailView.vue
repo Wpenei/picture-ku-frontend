@@ -83,7 +83,7 @@
                     <EditOutlined />
                   </template>
                 </a-button>
-                <a-button v-if="canEdit" danger @click="showDeleteConfirm(picture.id)">
+                <a-button v-if="canDelete" danger @click="showDeleteConfirm(picture.id)">
                   删除
                   <template #icon>
                     <DeleteOutlined />
@@ -109,6 +109,7 @@ import router from '@/router'
 import * as url from 'url'
 import { PIC_REVIEW_STATUS_ENUM } from '@/constants/picture.ts'
 import ShareModal from '@/components/ShareModal.vue'
+import { SPACE_PERMISSION_ENUM } from '@/constants/space.ts'
 
 const props = defineProps<{
   id: string | number
@@ -124,29 +125,30 @@ const getPictureDetail = async () => {
     if (res.data.code === 0 && res.data.data) {
       picture.value = res.data.data
     } else {
-      message.error('获取图片信息失败' + res.data.message)
+      message.error('获取图片信息失败,' + res.data.message)
     }
   } catch (error: any) {
-    message.error('获取图片信息失败' + error.message)
+    message.error('获取图片信息失败,' + error.message)
   }
 }
 // 页面加载时执行
 onMounted(() => {
   getPictureDetail()
 })
+
+// 通用权限检查函数
+function createPermissionChecker(permission: string) {
+  return computed(() => {
+    return (picture.value.permissionList ?? []).includes(permission)
+  })
+}
+
+// 定义权限检查
+const canEdit = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
+const canDelete = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
+
 // 获取当前登录用户信息
 const loginUserStore = useLoginUserStore()
-// 是否具有编辑权限
-const canEdit = computed(() => {
-  const loginUser = loginUserStore.loginUser
-  // 未登录不可编辑
-  if (!loginUser.id) {
-    return false
-  }
-  // 仅本人或管理员可编辑
-  const user = picture.value.userVO || {}
-  return loginUser.id === user.id || loginUser.userRole === 'admin'
-})
 // 编辑
 const doEdit = () => {
   router.push({

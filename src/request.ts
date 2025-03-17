@@ -1,14 +1,18 @@
 import axios from 'axios'
 import { message } from 'ant-design-vue'
 
+// 区分开发和生产环境
+const DEV_BASE_URL = "http://localhost:8123";
+// const PROD_BASE_URL = "http://81.69.229.63";
+// 创建 Axios 实例
 const myAxios = axios.create({
-  baseURL: 'http://localhost:8123',
-  timeout: 60000,
+  baseURL: DEV_BASE_URL,
+  timeout: 10000,
   withCredentials: true,
 });
 
 // Add a request interceptor 请求拦截器
-axios.interceptors.request.use(function (config) {
+myAxios.interceptors.request.use(function (config) {
   // Do something before request is sent
   return config;
 }, function (error) {
@@ -17,7 +21,7 @@ axios.interceptors.request.use(function (config) {
 });
 
 // Add a response interceptor 响应拦截器
-axios.interceptors.response.use(function (response) {
+myAxios.interceptors.response.use(function (response) {
   // Any status code that lie within the range of 2xx cause this function to trigger
   // Do something with response data
   const { data } = response;

@@ -39,6 +39,16 @@
             :options="SPACE_LEVEL_OPTIONS"
           />
         </a-form-item>
+        <a-form-item label="空间类别" name="spaceType">
+          <a-select
+            v-model:value="searchParams.spaceType"
+            :options="SPACE_TYPE_OPTIONS"
+            placeholder="请输入空间类别"
+            style="min-width: 180px"
+            allow-clear
+          />
+        </a-form-item>
+
         <a-form-item label="用户id">
           <a-input v-model:value="searchParams.userId" placeholder="请输入用户id" allow-clear />
         </a-form-item>
@@ -77,6 +87,13 @@
           <div>大小: {{ formatSize(record.totalSize) }} /{{ formatSize(record.maxSize) }}</div>
           <div>数量: {{ record.totalCount }} / {{ record.maxCount }}</div>
         </template>
+        <!-- 空间类别 -->
+        <template v-if="column.dataIndex === 'spaceType'">
+  <a-tag :color="getSpaceTypeColor(record.spaceType)">
+    {{ SPACE_TYPE_MAP[record.spaceType] }}
+  </a-tag>
+</template>
+
         <template v-if="column.dataIndex === 'createTime'">
           {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
         </template>
@@ -102,7 +119,13 @@ import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
 import { message, Modal } from 'ant-design-vue'
 import dayjs from 'dayjs'
 import { formatSize } from '../../utils'
-import { SPACE_LEVEL_ENUM, SPACE_LEVEL_MAP, SPACE_LEVEL_OPTIONS } from '../../constants/space.ts'
+import {
+  SPACE_LEVEL_ENUM,
+  SPACE_LEVEL_MAP,
+  SPACE_LEVEL_OPTIONS,
+  SPACE_TYPE_MAP,
+  SPACE_TYPE_OPTIONS
+} from '../../constants/space.ts'
 
 const columns = [
   {
@@ -117,6 +140,10 @@ const columns = [
   {
     title: '空间级别',
     dataIndex: 'spaceLevel',
+  },
+  {
+    title: '空间类型',
+    dataIndex: 'spaceType',
   },
   {
     title: '使用情况',
@@ -224,6 +251,18 @@ const showDeleteConfirm = (id: number) => {
     },
   })
 }
+// 添加在 setup 作用域内
+const getSpaceTypeColor = (type: number) => {
+  switch(type) {
+    case 0:  // 假设 0 表示公共空间
+      return 'default';
+    case 1:  // 假设 1 表示私有空间
+      return 'volcano';
+    default:
+      return 'default';
+  }
+}
+
 </script>
 
 <style scoped>
