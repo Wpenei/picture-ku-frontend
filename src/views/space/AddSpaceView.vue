@@ -48,7 +48,7 @@ import {
 import { useRoute, useRouter } from 'vue-router'
 import { SPACE_LEVEL_OPTIONS, SPACE_TYPE_ENUM, SPACE_TYPE_MAP } from '@/constants/space.ts'
 import { computed, onMounted, reactive, ref } from 'vue'
-import { formatSize } from '../utils'
+import { formatSize } from '../../utils'
 const formData = reactive<API.SpaceAddRequest>({})
 const loading = ref(false)
 const router = useRouter()

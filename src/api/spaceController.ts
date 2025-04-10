@@ -62,6 +62,21 @@ export async function getSpaceByIdUsingGet(
   })
 }
 
+/** getSpaceByUserId GET /api/space/get/by/user */
+export async function getSpaceByUserIdUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getSpaceByUserIdUsingGETParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseSpace_>('/api/space/get/by/user', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  })
+}
+
 /** getSpaceVoById GET /api/space/get/vo */
 export async function getSpaceVoByIdUsingGet(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)

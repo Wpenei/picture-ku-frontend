@@ -4,16 +4,17 @@ import RegisterView from '@/views/user/RegisterView.vue'
 import LoginView from '@/views/user/LoginView.vue'
 import PictureManageView from '@/views/admin/PictureManageView.vue'
 import UserManageView from '@/views/admin/UserManageView.vue'
-import AddPictureView from '@/views/AddPictureView.vue'
-import PictureDetailView from '@/views/PictureDetailView.vue'
-import BatchAddPictureView from '@/views/BatchAddPictureView.vue'
+import AddPictureView from '@/views/picture/AddPictureView.vue'
+import PictureDetailView from '@/views/picture/PictureDetailView.vue'
+import BatchAddPictureView from '@/views/picture/BatchAddPictureView.vue'
 import SpaceManageView from '@/views/admin/SpaceManageView.vue'
-import AddSpaceView from '@/views/AddSpaceView.vue'
-import MySpaceView from '@/views/MySpaceView.vue'
-import SpaceDetailView from '@/views/SpaceDetailView.vue'
-import SpaceAnalyze from '@/views/SpaceAnalyzeView.vue'
-import SpaceAnalyzeView from '@/views/SpaceAnalyzeView.vue'
+import AddSpaceView from '@/views/space/AddSpaceView.vue'
+import MySpaceView from '@/views/space/MySpaceView.vue'
+import SpaceDetailView from '@/views/space/SpaceDetailView.vue'
+import SpaceAnalyze from '@/views/space/SpaceAnalyzeView.vue'
+import SpaceAnalyzeView from '@/views/space/SpaceAnalyzeView.vue'
 import SpaceUserManageView from '@/views/admin/SpaceUserManageView.vue'
+import UserInfoView from '@/views/user/UserInfoView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +33,12 @@ const router = createRouter({
       path: '/user/register',
       name: '用户注册',
       component: RegisterView,
+    },
+    {
+      path: '/user/info/:id',
+      name: '个人中心',
+      component: UserInfoView,
+      props:true,
     },
     {
       path: '/admin/user/manage',

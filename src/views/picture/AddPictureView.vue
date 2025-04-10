@@ -77,7 +77,9 @@
         />
       </a-form-item>
       <a-form-item>
-        <a-button type="primary" html-type="submit" style="width: 100%">创建</a-button>
+        <a-button type="primary" html-type="submit" style="width: 100%">
+          {{ route.query?.id ? '保存修改' : '立即添加' }}
+        </a-button>
       </a-form-item>
     </a-form>
   </div>
@@ -250,7 +252,7 @@ watchEffect(() => {
 <style scoped>
 #addPicturePage {
   max-width: 720px;
-  margin: 0 auto;
+  margin: 32px auto;
 }
 
 #addPicturePage .edit-bar {

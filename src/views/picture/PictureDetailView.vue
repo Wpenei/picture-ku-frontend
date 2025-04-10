@@ -103,7 +103,7 @@ import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined,DownloadOutline
 import { deletePictureUsingDelete, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
 import { computed, createVNode, onMounted, ref } from 'vue'
 import { message, Modal } from 'ant-design-vue'
-import { downloadImage, formatSize, toHexColor } from '../utils'
+import { downloadImage, formatSize, toHexColor } from '../../utils'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import router from '@/router'
 import * as url from 'url'

@@ -15,23 +15,21 @@
           @click="doMenuClick"
         />
       </a-col>
-      <a-col flex="150px">
-        <a-button
-          type="primary"
-          @click="doAddPicture"
-        >
-          <template #icon>
-            <PlusOutlined />
-          </template>
-          上传图片
-        </a-button>
-      </a-col>
-
-      <a-col flex="150px">
+      <!--
+            <a-col flex="150px">
+              <a-button type="primary" @click="doAddPicture">
+                <template #icon>
+                  <PlusOutlined />
+                </template>
+                上传图片
+              </a-button>
+            </a-col>
+      -->
+      <a-col flex="150px" >
         <div class="user-login-status">
           <div v-if="loginUserStore.loginUser.id">
             <a-dropdown>
-              <div>
+              <div class="user-info" @click="doUserInfo">
                 <!-- 优化后的头像组件 -->
                 <a-avatar
                   size="large"
@@ -40,6 +38,7 @@
                     verticalAlign: 'middle',
                     marginRight: '4px',
                     backgroundColor: !loginUserStore.loginUser.userAvatar ? color : 'transparent',
+                    cursor: 'pointer'
                   }"
                 >
                   {{
@@ -48,17 +47,21 @@
                   }}
                 </a-avatar>
 
-                {{ loginUserStore.loginUser.userName ?? '无名' }}
+                <span class="username">{{ loginUserStore.loginUser.userName ?? '无名' }}</span>
               </div>
               <template #overlay>
-                <a-menu >
+                <a-menu>
+                  <a-menu-item key="２" @click="doUserInfo">
+                    <UnorderedListOutlined />
+                    个人中心
+                  </a-menu-item>
                   <a-menu-item key="1">
                     <router-link to="/my_space">
                       <UserOutlined />
                       我的空间
                     </router-link>
                   </a-menu-item>
-                  <a-menu-item key="2" @click="doLogout">
+                  <a-menu-item key="３" @click="doLogout">
                     <LogoutOutlined />
                     退出登录
                   </a-menu-item>
@@ -77,12 +80,21 @@
 
 <script lang="ts" setup>
 import { computed, h, ref } from 'vue'
-import { HomeOutlined, TeamOutlined, PictureOutlined, PlusOutlined ,TableOutlined,UserOutlined, LogoutOutlined } from '@ant-design/icons-vue'
+import {
+  HomeOutlined,
+  TeamOutlined,
+  PictureOutlined,
+  PlusOutlined,
+  TableOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  UnorderedListOutlined,
+} from '@ant-design/icons-vue'
 import { MenuProps, message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { userLogoutUsingPost } from '@/api/userController.ts'
-import AddPictureView from '@/views/AddPictureView.vue'
+import AddPictureView from '@/views/picture/AddPictureView.vue'
 
 const loginUserStore = useLoginUserStore()
 const current = ref<string[]>(['home'])
@@ -158,6 +170,12 @@ const doLogout = async () => {
     message.error('退出失败' + res.data.message)
   }
 }
+// 个人中心
+const doUserInfo = () => {
+  router.push({
+    path: '/user/info/'+ loginUserStore.loginUser.id,
+  })
+}
 // 跳转登录页面
 const doLogin = () => {
   router.push({
@@ -203,5 +221,26 @@ router.afterEach((to) => {
 
 .userImage {
   width: 30px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+
+}
+/* 下拉菜单样式 */
+:deep(.ant-menu-sub) {
+  min-width: 120px;
+  padding: 4px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.username {
+  margin-left: 4px;
+  color: rgba(0, 0, 0, 0.85);
 }
 </style>

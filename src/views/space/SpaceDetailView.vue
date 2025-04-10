@@ -30,7 +30,7 @@
     </a-flex>
     <a-flex justify="flex-start" align="center">
       <a-typography-paragraph style="margin-right: 16px">
-        占用空间:{{ formatSize(space.totalSize) }}/{{ formatSize(space.maxSize) }}
+        空间占用:{{ formatSize(space.totalSize) }}/{{ formatSize(space.maxSize) }}
       </a-typography-paragraph>
       <a-progress
         :stroke-color="
@@ -96,7 +96,7 @@ import { ColorPicker } from 'vue3-colorpicker'
 import 'vue3-colorpicker/style.css'
 import BatchEditPictureModal from '@/components/BatchEditPictureModal.vue'
 import { EditOutlined, BarChartOutlined, TeamOutlined } from '@ant-design/icons-vue'
-import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '../constants/space.ts'
+import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '../../constants/space.ts'
 
 const props = defineProps<{
   id: number

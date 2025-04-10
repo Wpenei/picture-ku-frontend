@@ -1,111 +1,349 @@
 <template>
   <div id="globalSider">
-    <a-layout-sider
-      v-if="loginUserStore.loginUser.id"
-      width="200"
-      breakpoint="lg"
-      collapsed-width="0"
-    >
-      <a-menu
-        v-model:selectedKeys="current"
-        mode="inline"
-        :items="menuItems"
-        @click="doMenuClick"
-      />
-    </a-layout-sider>
+    <div class="sider-wrapper" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
+      <a-layout-sider
+        v-if="loginUserStore.loginUser.id"
+        :width="expanded ? 200 : 80"
+        breakpoint="lg"
+        collapsed-width="80"
+        :trigger="null"
+        collapsible
+        :collapsed="!expanded"
+        class="custom-sider"
+      >
+        <a-menu
+          v-model:selectedKeys="current"
+          mode="inline"
+          :items="menuItems"
+          @click="doMenuClick"
+          class="custom-menu"
+        />
+      </a-layout-sider>
+    </div>
   </div>
 </template>
+
 <script lang="ts" setup>
-import { computed, h, ref, watchEffect } from 'vue'
-import { PictureOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons-vue'
+import { h, ref, computed, watchEffect, onMounted } from 'vue'
+import {
+  PictureOutlined,
+  UserOutlined,
+  CloudUploadOutlined,
+  TeamOutlined,
+  PlusOutlined,
+  DownOutlined,
+  UpOutlined,
+} from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { SPACE_TYPE_ENUM } from '@/constants/space.ts'
-import { listMySpaceUsingPost, } from '@/api/spaceUserController.ts'
 import { message } from 'ant-design-vue'
+import { listMySpaceUsingPost, } from '@/api/spaceUserController.ts'
 
 const loginUserStore = useLoginUserStore()
+const router = useRouter()
+const expanded = ref(false)
+const isTeamExpanded = ref(false)
+const userId = computed(() => loginUserStore.loginUser.id)
+
+// 处理鼠标进入
+const handleMouseEnter = () => {
+  expanded.value = true
+}
+
+// 处理鼠标离开
+const handleMouseLeave = () => {
+  expanded.value = false
+}
 
 // 固定的菜单列表
 const fixedMenuItems = [
   {
     key: '/',
-    icon: () => h(PictureOutlined),
+    icon: () => h(PictureOutlined, { style: 'font-size: 24px; color: #f1cadf;' }),
     label: '公共图库',
   },
   {
     key: '/my_space',
     label: '我的空间',
-    icon: () => h(UserOutlined),
+    icon: () => h(UserOutlined, { style: 'font-size: 24px; color: #fbdeda;' }),
   },
   {
-    key: '/addSpace?type=' + SPACE_TYPE_ENUM.TEAM,
-    label: '创建团队',
-    icon: () => h(TeamOutlined),
+    key: '/my_ports',
+    label: '我的发布',
+    icon: () => h(CloudUploadOutlined, { style: 'font-size: 24px; color: #e4d0b5;' }),
   },
 ]
 
 const teamSpaceList = ref<API.SpaceUserVO[]>([])
-const menuItems = computed(() => {
-  // 如果用户没有团队空间，则只展示固定菜单
-  if (teamSpaceList.value.length < 1) {
-    return fixedMenuItems
-  }
-  // 如果用户有团队空间，则展示固定菜单和团队空间菜单
-  // 展示团队空间分组
-  const teamSpaceSubMenus = teamSpaceList.value.map((spaceUser) => {
-    const space = spaceUser.spaceVO
-    return {
-      key: '/space/' + spaceUser.spaceId,
-      label: space?.spaceName,
-    }
-  })
-  const teamSpaceMenuGroup = {
-    type: 'group',
-    label: '我的团队',
-    key: 'teamSpace',
-    children: teamSpaceSubMenus,
-  }
-  return [...fixedMenuItems, teamSpaceMenuGroup]
-})
 
-// 加载团队空间列表
-const fetchTeamSpaceList = async () => {
-  const res = await listMySpaceUsingPost()
-  if (res.data.code === 0 && res.data.data) {
-    teamSpaceList.value = res.data.data
-  } else {
-    message.error('加载我的团队空间失败，' + res.data.message)
-  }
+// 处理添加团队点击
+const handleAddTeam = (e: Event) => {
+  e.stopPropagation()
+  router.push('/addSpace?type=' + SPACE_TYPE_ENUM.TEAM)
 }
 
-/**
- * 监听变量，改变时触发数据的重新加载
- */
-watchEffect(() => {
-  // 登录才加载
-  if (loginUserStore.loginUser.id) {
-    fetchTeamSpaceList()
+// 计算菜单项
+const menuItems = computed(() => {
+  const items = [...fixedMenuItems]
+
+  // 团队空间菜单
+  const teamMenuItem = {
+    key: 'team-spaces',
+    icon: () => h(TeamOutlined, { style: 'font-size: 24px; color: #a7d1df;' }),
+    children: [],
+    class: 'team-menu-item',
+  }
+
+  // 设置标题和添加按钮
+  teamMenuItem.label = h('div', { class: 'team-menu-title' }, [
+    '我的团队',
+    h(
+      'a-button',
+      {
+        type: 'link',
+        class: 'add-team-btn',
+        onClick: handleAddTeam,
+      },
+      [h(PlusOutlined)],
+    ),
+  ])
+
+  // 如果有团队列表数据
+  if (teamSpaceList.value.length > 0) {
+    const displayCount = 3 // 默认显示前3个团队
+    const isExpanded = ref(false)
+
+    teamSpaceList.value.forEach((team, index) => {
+      if (!isTeamExpanded.value && index >= displayCount) {
+        return
+      }
+
+      // 判断是否是用户创建的团队
+      const isCreator = team.spaceVO?.userId === userId.value
+      const teamLabel = isCreator ? `${team.spaceVO?.spaceName} (我的)` : team.spaceVO?.spaceName
+
+      teamMenuItem.children.push({
+        key: `/space/${team.spaceId}`,
+        label: teamLabel,
+      })
+    })
+
+    // 添加展开/收起按钮
+    if (teamSpaceList.value.length > displayCount && !isTeamExpanded.value) {
+      teamMenuItem.children.push({
+        key: 'expand',
+        label: h(
+          'div',
+          { class: 'expand-collapse-text' },
+          `展开其他 ${teamSpaceList.value.length - displayCount} 个团队`,
+        ),
+        onClick: (e: Event) => {
+          e.stopPropagation()
+          isTeamExpanded.value = true
+        },
+      })
+    } else if (isTeamExpanded.value) {
+      teamMenuItem.children.push({
+        key: 'collapse',
+        label: h('div', { class: 'expand-collapse-text' }, '收起'),
+        onClick: (e: Event) => {
+          e.stopPropagation()
+          isTeamExpanded.value = false
+        },
+      })
+    }
+  }
+
+  items.push(teamMenuItem)
+  return items
+})
+
+// 获取团队空间列表（只在组件挂载时获取一次）
+onMounted(async () => {
+  try {
+    const res = await listMySpaceUsingPost({})
+    if (res.data.code === 0) {
+      teamSpaceList.value = res.data.data ?? []
+
+    }
+  } catch (error) {
+    console.error('获取团队空间列表失败:', error)
   }
 })
 
-const router = useRouter()
 // 当前要高亮的菜单项
 const current = ref<string[]>([])
+
 // 监听路由变化，更新高亮菜单项
-router.afterEach((to, from, next) => {
+router.afterEach((to) => {
   current.value = [to.path]
 })
 
 // 路由跳转事件
-const doMenuClick = ({ key }) => {
+const doMenuClick = ({ key }: { key: string }) => {
+  // 忽略展开/收起的点击
+  if (key === 'expand' || key === 'collapse') {
+    return
+  }
   router.push(key)
 }
 </script>
 
 <style scoped>
-#globalSider .ant-layout-sider {
-  background: none;
+#globalSider {
+  .sider-wrapper {
+    position: relative;
+    height: 100%;
+    display: flex;
+  }
+
+  .custom-sider {
+    margin-right: 12px;
+    background: white;
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1) 0s;
+    overflow: hidden;
+    box-shadow: 1px 0 0 0 rgba(0, 0, 0, 0.05);
+    height: 100%;
+  }
+
+  :deep(.ant-menu) {
+    border: none;
+    transition: all 0.3s;
+    height: 100%;
+    padding-top: 8px;
+  }
+
+  :deep(.ant-menu-item) {
+    height: 48px;
+    line-height: 48px;
+    border-radius: 12px;
+    margin: 4px 8px;
+    color: #64748b;
+    padding: 0 16px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* 未选中状态的图标颜色 */
+    .anticon {
+      transition: all 0.3s ease;
+      margin-right: 10px;
+    }
+
+    /* 悬浮状态 */
+    &:hover {
+      color: #aed4a7;
+      background: #f0faea;
+
+      .anticon {
+        transform: scale(1.1);
+      }
+    }
+
+    /* 选中状态 */
+    &.ant-menu-item-selected {
+      color: #aed4a7;
+      background: #f0faea;
+      font-weight: 500;
+
+      &::after {
+        display: none;
+      }
+    }
+  }
+
+  /* 折叠状态下的样式 */
+  :deep(.ant-menu-inline-collapsed) {
+    width: 80px;
+
+    .ant-menu-item {
+      padding: 0 28px !important;
+
+      .anticon {
+        margin-right: 0;
+        font-size: 20px;
+      }
+    }
+  }
+
+  :deep(.ant-layout-sider-children) {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 响应式调整 */
+  @media screen and (max-width: 992px) {
+    .custom-sider {
+      margin-right: 0;
+    }
+
+    :deep(.ant-menu-item) {
+      height: 42px;
+      line-height: 42px;
+      margin: 2px 4px;
+    }
+  }
+}
+
+.team-menu-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.add-team-btn {
+  font-size: 20px;
+  padding: 4px;
+  height: auto;
+  color: #4f46e5;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-team-btn:hover {
+  opacity: 1;
+  background: #f5f3ff;
+  transform: scale(1.1);
+  border-radius: 4px;
+}
+
+:deep(.team-menu-item) {
+  .ant-menu-submenu-title {
+    padding-left: 31px;
+  }
+
+  /* 没有团队时隐藏箭头 */
+  &:not(.ant-menu-submenu-open):not(:hover) .ant-menu-submenu-arrow {
+    display: none;
+  }
+}
+
+/* 确保图标大小一致 */
+:deep(.anticon) {
+  font-size: 20px !important;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.expand-collapse-text {
+  font-size: 13px;
+  color: #6b7280;
+
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.expand-collapse-text:hover {
+  color: #4f46e5;
+  background: #f5f3ff;
 }
 </style>
-
