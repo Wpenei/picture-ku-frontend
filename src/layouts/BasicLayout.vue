@@ -6,7 +6,9 @@
         <GlobalHeader />
       </a-layout-header>
       <a-layout>
-        <GlobalSider  />
+        <template v-if="loginUserStore.loginUser.userRole === 'admin'">
+          <GlobalSider class="sider" />
+        </template>
         <a-layout-content class="consent">
           <router-view />
         </a-layout-content>
@@ -28,7 +30,8 @@ import GlobalLoading from '@/components/GlobalLoading.vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getCurrentYear } from '@/utils/date'
-
+import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+const loginUserStore = useLoginUserStore()
 const router = useRouter()
 const isRouteLoading = ref(false)
 let loadingTimeout: number | null = null
@@ -63,19 +66,18 @@ const currentYear = computed(() => getCurrentYear())
 #basicLayout .header {
   color: unset;
   background: white;
-  padding-inline: 30px;
-  margin-bottom: 15px;
+  padding-inline: 16px;
+  margin-bottom: 8px;
 }
 
 #basicLayout .consent {
-  padding-left: 32px;
+  padding: 40px 32px;
   background: linear-gradient(to right, #fefefe, #fff);
 }
 
-#basicLayout .side {
+#basicLayout .sider {
   background: #ffffff;
-  padding-top: 31px;
-  border-right: 0.5px solid #eee;
+  padding-top: 16px;
 }
 
 #basicLayout :deep(.ant-menu-root) {

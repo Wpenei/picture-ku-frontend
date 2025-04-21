@@ -77,9 +77,17 @@ export async function listSpaceUserUsingPost(
   })
 }
 
-/** listMySpace POST /api/spaceUser/list/my */
-export async function listMySpaceUsingPost(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListSpaceUserVO_>('/api/spaceUser/list/my', {
+/** listMyCreateTeamSpace POST /api/spaceUser/list/my_create */
+export async function listMyCreateTeamSpaceUsingPost(options?: { [key: string]: any }) {
+  return request<API.BaseResponseListSpaceUserVO_>('/api/spaceUser/list/my_create', {
+    method: 'POST',
+    ...(options || {}),
+  })
+}
+
+/** listMyJoinTeamSpace POST /api/spaceUser/list/my_join */
+export async function listMyJoinTeamSpaceUsingPost(options?: { [key: string]: any }) {
+  return request<API.BaseResponseListSpaceUserVO_>('/api/spaceUser/list/my_join', {
     method: 'POST',
     ...(options || {}),
   })

@@ -1,6 +1,6 @@
 <template>
   <div id="user-info">
-    <a-row style="margin-top: 32px; height: 280px">
+    <a-row style=" height: 280px">
       <!-- 个人信息  -->
       <a-col :xs="6" :sm="6" :md="8" :lg="8" :xl="8">
         <a-card title="个人信息" style="height: 280px">
@@ -41,7 +41,7 @@
               <a-col :span="12">
                 <a-typography-paragraph>
                   <a-typography-text strong>空间名称：</a-typography-text>
-                  {{ space.spaceName || loginUser.userName + '的个人空间' }}
+                  {{ space.spaceName || ' ' }}
                 </a-typography-paragraph>
               </a-col>
               <a-col :span="12">
@@ -55,13 +55,7 @@
                         : 'red'
                   "
                 >
-                  {{
-                    space.spaceLevel === SPACE_LEVEL_ENUM.COMMON
-                      ? '普通版'
-                      : space.spaceLevel === SPACE_LEVEL_ENUM.PROFESSIONAL
-                        ? '专业版'
-                        : '旗舰版'
-                  }}
+                  {{SPACE_LEVEL_MAP[space.spaceLevel]}}
                 </a-tag>
               </a-col>
             </a-row>
@@ -210,15 +204,15 @@ import { updateUserUsingPost } from '@/api/userController.ts'
 import { message } from 'ant-design-vue'
 import { AntDesignOutlined, EditOutlined } from '@ant-design/icons-vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
-import { getSpaceByUserIdUsingGet, getSpaceVoByIdUsingGet } from '@/api/spaceController'
+import {  getSpaceByUserIdUsingPost, getSpaceVoByIdUsingGet } from '@/api/spaceController'
 import { formatSize } from '@/utils'
-import { SPACE_LEVEL_ENUM } from '@/constants/space.ts'
+import { SPACE_LEVEL_ENUM, SPACE_LEVEL_MAP, SPACE_ROLE_MAP, SPACE_TYPE_ENUM } from '@/constants/space.ts'
 import { useRouter } from 'vue-router' // 请确认实际接口路径
 import { listPictureVoByPageUsingPost } from '@/api/pictureController'
 import dayjs from 'dayjs'
 
 const loginUserStore = useLoginUserStore()
-const loginUser = computed(() => loginUserStore.loginUser)
+const loginUser =  loginUserStore.loginUser
 
 const router = useRouter()
 
@@ -232,12 +226,15 @@ const percent = computed(() => {
 // 根据用户id获取空间详情
 const getSpaceByUserId = async () => {
   try {
-    const res = await getSpaceByUserIdUsingGet({
-      userId: loginUser.value?.id,
+    const res = await getSpaceByUserIdUsingPost({
+      userId: loginUser.id,
     })
     if (res.data.code === 0 && res.data.data) {
       space.value = res.data.data
-    } else {
+    }else if(res.data.data === null){
+      message.warning('您还未创建空间')
+    }
+    else {
       message.error('获取空间信息失败：' + res.data.message)
     }
   } catch (error) {
@@ -371,7 +368,6 @@ const handleEditSubmit = async () => {
 #user-info {
   max-width: 450px;
   margin: 0 auto;
-  padding: 64px;
 }
 
 .recent-upload {

@@ -11,11 +11,10 @@
         <a-menu
           v-model:selectedKeys="current"
           mode="horizontal"
-          :items="items"
+          :items="originItems"
           @click="doMenuClick"
         />
       </a-col>
-      <!--
             <a-col flex="150px">
               <a-button type="primary" @click="doAddPicture">
                 <template #icon>
@@ -24,7 +23,6 @@
                 上传图片
               </a-button>
             </a-col>
-      -->
       <a-col flex="150px" >
         <div class="user-login-status">
           <div v-if="loginUserStore.loginUser.id">
@@ -79,7 +77,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, h, ref } from 'vue'
+import { computed, h, onMounted, ref } from 'vue'
 import {
   HomeOutlined,
   TeamOutlined,
@@ -88,13 +86,14 @@ import {
   TableOutlined,
   UserOutlined,
   LogoutOutlined,
-  UnorderedListOutlined,
+  UnorderedListOutlined, CloudUploadOutlined
 } from '@ant-design/icons-vue'
 import { MenuProps, message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { userLogoutUsingPost } from '@/api/userController.ts'
 import AddPictureView from '@/views/picture/AddPictureView.vue'
+import { SPACE_TYPE_ENUM } from '@/constants/space.ts'
 
 const loginUserStore = useLoginUserStore()
 const current = ref<string[]>(['home'])
@@ -103,46 +102,27 @@ const current = ref<string[]>(['home'])
 const originItems = [
   {
     key: '/',
-    icon: () => h(HomeOutlined),
+    icon: () => h(HomeOutlined,{style: 'font-size: 20px;'}),
     label: '主页',
     title: '主页',
   },
-
   {
-    key: '/admin/user/manage',
-    icon: () => h(TeamOutlined),
-    label: '用户管理',
-    title: '用户管理',
+    key: '/user/release/:id',
+    label: '我的发布',
+    icon: () => h(CloudUploadOutlined, { style: 'font-size: 20px; color: #fbdeda;' }),
   },
   {
-    key: '/admin/picture/manage',
-    icon: () => h(PictureOutlined),
-    label: '图片管理',
-    title: '图片管理',
+    key: '/my_space',
+    label: '我的空间',
+    icon: () => h(UserOutlined, { style: 'font-size: 20px; color: #f1cadf;' }),
   },
   {
-    key: '/admin/space/manage',
-    icon: () => h(TableOutlined),
-    label: '空间管理',
-    title: '空间管理',
+    key: '/team',
+    label: '我的团队',
+    icon: () => h(TeamOutlined, { style: 'font-size: 20px; color: #a7d1df;' }),
   },
 ]
 
-// 过滤菜单项
-const filterMenus = (menus = [] as MenuProps['items']) => {
-  return menus?.filter((menu) => {
-    if (menu?.key?.startsWith('/admin')) {
-      const loginUser = loginUserStore.loginUser
-      if (!loginUser || loginUser.userRole !== 'admin') {
-        return false
-      }
-    }
-    return true
-  })
-}
-
-// 展示在菜单的路由数组
-const items = computed<MenuProps['items']>(() => filterMenus(originItems))
 // 用户头像
 const colorList = ['#bbb', '#7265e6', '#ffbf00', '#00a2ae']
 const color = ref(colorList[0])

@@ -14,7 +14,7 @@
         <a-menu
           v-model:selectedKeys="current"
           mode="inline"
-          :items="menuItems"
+          :items="items"
           @click="doMenuClick"
           class="custom-menu"
         />
@@ -32,19 +32,17 @@ import {
   TeamOutlined,
   PlusOutlined,
   DownOutlined,
-  UpOutlined,
+  UpOutlined, TableOutlined
 } from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { SPACE_TYPE_ENUM } from '@/constants/space.ts'
-import { message } from 'ant-design-vue'
+import { type MenuProps, message } from 'ant-design-vue'
 import { listMySpaceUsingPost, } from '@/api/spaceUserController.ts'
 
 const loginUserStore = useLoginUserStore()
 const router = useRouter()
 const expanded = ref(false)
-const isTeamExpanded = ref(false)
-const userId = computed(() => loginUserStore.loginUser.id)
 
 // 处理鼠标进入
 const handleMouseEnter = () => {
@@ -56,121 +54,44 @@ const handleMouseLeave = () => {
   expanded.value = false
 }
 
+// 过滤菜单项
+const filterMenus = (menus = [] as MenuProps['items']) => {
+  return menus?.filter((menu) => {
+    if (menu?.key?.startsWith('/admin')) {
+      const loginUser = loginUserStore.loginUser
+      if (!loginUser || loginUser.userRole !== 'admin') {
+        return false
+      }
+    }
+    return true
+  })
+}
+
+// 展示在菜单的路由数组
+const items = computed<MenuProps['items']>(() => filterMenus(fixedMenuItems))
+
 // 固定的菜单列表
 const fixedMenuItems = [
   {
-    key: '/',
-    icon: () => h(PictureOutlined, { style: 'font-size: 24px; color: #f1cadf;' }),
-    label: '公共图库',
+    key: '/admin/user/manage',
+    icon: () => h(TeamOutlined),
+    label: '用户管理',
+    title: '用户管理',
   },
   {
-    key: '/my_space',
-    label: '我的空间',
-    icon: () => h(UserOutlined, { style: 'font-size: 24px; color: #fbdeda;' }),
+    key: '/admin/picture/manage',
+    icon: () => h(PictureOutlined),
+    label: '图片管理',
+    title: '图片管理',
   },
   {
-    key: '/my_ports',
-    label: '我的发布',
-    icon: () => h(CloudUploadOutlined, { style: 'font-size: 24px; color: #e4d0b5;' }),
+    key: '/admin/space/manage',
+    icon: () => h(TableOutlined),
+    label: '空间管理',
+    title: '空间管理',
   },
 ]
 
-const teamSpaceList = ref<API.SpaceUserVO[]>([])
-
-// 处理添加团队点击
-const handleAddTeam = (e: Event) => {
-  e.stopPropagation()
-  router.push('/addSpace?type=' + SPACE_TYPE_ENUM.TEAM)
-}
-
-// 计算菜单项
-const menuItems = computed(() => {
-  const items = [...fixedMenuItems]
-
-  // 团队空间菜单
-  const teamMenuItem = {
-    key: 'team-spaces',
-    icon: () => h(TeamOutlined, { style: 'font-size: 24px; color: #a7d1df;' }),
-    children: [],
-    class: 'team-menu-item',
-  }
-
-  // 设置标题和添加按钮
-  teamMenuItem.label = h('div', { class: 'team-menu-title' }, [
-    '我的团队',
-    h(
-      'a-button',
-      {
-        type: 'link',
-        class: 'add-team-btn',
-        onClick: handleAddTeam,
-      },
-      [h(PlusOutlined)],
-    ),
-  ])
-
-  // 如果有团队列表数据
-  if (teamSpaceList.value.length > 0) {
-    const displayCount = 3 // 默认显示前3个团队
-    const isExpanded = ref(false)
-
-    teamSpaceList.value.forEach((team, index) => {
-      if (!isTeamExpanded.value && index >= displayCount) {
-        return
-      }
-
-      // 判断是否是用户创建的团队
-      const isCreator = team.spaceVO?.userId === userId.value
-      const teamLabel = isCreator ? `${team.spaceVO?.spaceName} (我的)` : team.spaceVO?.spaceName
-
-      teamMenuItem.children.push({
-        key: `/space/${team.spaceId}`,
-        label: teamLabel,
-      })
-    })
-
-    // 添加展开/收起按钮
-    if (teamSpaceList.value.length > displayCount && !isTeamExpanded.value) {
-      teamMenuItem.children.push({
-        key: 'expand',
-        label: h(
-          'div',
-          { class: 'expand-collapse-text' },
-          `展开其他 ${teamSpaceList.value.length - displayCount} 个团队`,
-        ),
-        onClick: (e: Event) => {
-          e.stopPropagation()
-          isTeamExpanded.value = true
-        },
-      })
-    } else if (isTeamExpanded.value) {
-      teamMenuItem.children.push({
-        key: 'collapse',
-        label: h('div', { class: 'expand-collapse-text' }, '收起'),
-        onClick: (e: Event) => {
-          e.stopPropagation()
-          isTeamExpanded.value = false
-        },
-      })
-    }
-  }
-
-  items.push(teamMenuItem)
-  return items
-})
-
-// 获取团队空间列表（只在组件挂载时获取一次）
-onMounted(async () => {
-  try {
-    const res = await listMySpaceUsingPost({})
-    if (res.data.code === 0) {
-      teamSpaceList.value = res.data.data ?? []
-
-    }
-  } catch (error) {
-    console.error('获取团队空间列表失败:', error)
-  }
-})
 
 // 当前要高亮的菜单项
 const current = ref<string[]>([])

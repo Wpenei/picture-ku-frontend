@@ -1,4 +1,9 @@
 declare namespace API {
+  type addTagUsingPOSTParams = {
+    /** tagName */
+    tagName: string
+  }
+
   type BaseResponseBoolean_ = {
     code?: number
     data?: boolean
@@ -20,6 +25,36 @@ declare namespace API {
   type BaseResponseInt_ = {
     code?: number
     data?: number
+    message?: string
+  }
+
+  type BaseResponseListCategoryVO_ = {
+    code?: number
+    data?: CategoryVO[]
+    message?: string
+  }
+
+  type BaseResponseListCommentVO_ = {
+    code?: number
+    data?: CommentVO[]
+    message?: string
+  }
+
+  type BaseResponseListImageSearchResult_ = {
+    code?: number
+    data?: ImageSearchResult[]
+    message?: string
+  }
+
+  type BaseResponseListLikeRecordVO_ = {
+    code?: number
+    data?: LikeRecordVO[]
+    message?: string
+  }
+
+  type BaseResponseListMessageVO_ = {
+    code?: number
+    data?: MessageVO[]
     message?: string
   }
 
@@ -71,6 +106,18 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseListString_ = {
+    code?: number
+    data?: string[]
+    message?: string
+  }
+
+  type BaseResponseListTagVO_ = {
+    code?: number
+    data?: TagVO[]
+    message?: string
+  }
+
   type BaseResponseLoginUserVO_ = {
     code?: number
     data?: LoginUserVO
@@ -80,6 +127,36 @@ declare namespace API {
   type BaseResponseLong_ = {
     code?: number
     data?: number
+    message?: string
+  }
+
+  type BaseResponseMapStringString_ = {
+    code?: number
+    data?: Record<string, any>
+    message?: string
+  }
+
+  type BaseResponseMessageCenterVO_ = {
+    code?: number
+    data?: MessageCenterVO
+    message?: string
+  }
+
+  type BaseResponsePageCategoryVO_ = {
+    code?: number
+    data?: PageCategoryVO_
+    message?: string
+  }
+
+  type BaseResponsePageCommentVO_ = {
+    code?: number
+    data?: PageCommentVO_
+    message?: string
+  }
+
+  type BaseResponsePageLikeRecordVO_ = {
+    code?: number
+    data?: PageLikeRecordVO_
     message?: string
   }
 
@@ -104,6 +181,12 @@ declare namespace API {
   type BaseResponsePageSpaceVO_ = {
     code?: number
     data?: PageSpaceVO_
+    message?: string
+  }
+
+  type BaseResponsePageTagVO_ = {
+    code?: number
+    data?: PageTagVO_
     message?: string
   }
 
@@ -173,6 +256,70 @@ declare namespace API {
     message?: string
   }
 
+  type CategoryAddRequest = {
+    categoryName?: string
+    type?: number
+  }
+
+  type CategoryVO = {
+    categoryName?: string
+    categoryType?: number
+    createTime?: string
+    editTime?: string
+    id?: number
+    updateTime?: string
+  }
+
+  type CommentAddRequest = {
+    content?: string
+    targetId?: number
+    targetType?: number
+  }
+
+  type CommentLikeRequest = {
+    dislikeCount?: number
+    id?: number
+    likeCount?: number
+    userId?: number
+  }
+
+  type CommentQueryRequest = {
+    current?: number
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
+    targetId?: number
+    targetType?: number
+  }
+
+  type CommentUserVO = {
+    id?: number
+    userAccount?: string
+    userAvatar?: string
+    userName?: string
+  }
+
+  type CommentVO = {
+    children?: CommentVO[]
+    commentCount?: number
+    commentUser?: CommentUserVO
+    content?: string
+    createTime?: string
+    current?: number
+    dislikeCount?: number
+    id?: number
+    likeCount?: number
+    pageSize?: number
+    parentCommentId?: number
+    picture?: PictureVO
+    sortField?: string
+    sortOrder?: string
+    targetId?: number
+    targetType?: number
+    targetUserId?: number
+    userId?: number
+  }
+
   type CreatePictureOutPaintingTaskRequest = {
     parameters?: Parameters
     pictureId?: number
@@ -189,11 +336,35 @@ declare namespace API {
     id?: number
   }
 
+  type deleteTagUsingPOSTParams = {
+    /** id */
+    id: number
+  }
+
   type doLoginUsingPOSTParams = {
     /** name */
     name?: string
     /** pwd */
     pwd?: string
+  }
+
+  type EmailCodeRequest = {
+    email?: string
+    type?: string
+  }
+
+  type findCategoryUsingPOSTParams = {
+    /** categoryName */
+    categoryName: string
+    /** type */
+    type?: number
+  }
+
+  type getLikeStatusUsingGETParams = {
+    /** targetId */
+    targetId: number
+    /** targetType */
+    targetType: number
   }
 
   type GetOutPaintingTaskResponse = {
@@ -221,7 +392,7 @@ declare namespace API {
     id?: number
   }
 
-  type getSpaceByUserIdUsingGETParams = {
+  type getSpaceByUserIdUsingPOSTParams = {
     /** userId */
     userId?: number
   }
@@ -241,6 +412,44 @@ declare namespace API {
     id?: number
   }
 
+  type ImageSearchResult = {
+    fromUrl?: string
+    thumbUrl?: string
+  }
+
+  type LikeQueryRequest = {
+    current?: number
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
+    targetType?: number
+  }
+
+  type LikeRecordVO = {
+    id?: number
+    lastLikeTime?: string
+    target?: Record<string, any>
+    targetType?: number
+    targetUserId?: number
+    user?: UserVO
+  }
+
+  type LikeRequest = {
+    isLiked?: boolean
+    targetId?: number
+    targetType?: number
+  }
+
+  type listCategoryByTypeUsingGETParams = {
+    /** type */
+    type: number
+  }
+
+  type listCategoryVOUsingPOSTParams = {
+    /** type */
+    type?: number
+  }
+
   type LoginUserVO = {
     createTime?: string
     editTime?: string
@@ -251,6 +460,26 @@ declare namespace API {
     userName?: string
     userProfile?: string
     userRole?: string
+  }
+
+  type MapStringString_ = true
+
+  type MessageAddRequest = {
+    content?: string
+    ip?: string
+  }
+
+  type MessageCenterVO = {
+    totalUnread?: number
+    unreadComments?: number
+    unreadLikes?: number
+  }
+
+  type MessageVO = {
+    content?: string
+    createTime?: string
+    id?: number
+    ip?: string
   }
 
   type Output = {
@@ -270,6 +499,30 @@ declare namespace API {
     taskStatus?: string
   }
 
+  type PageCategoryVO_ = {
+    current?: number
+    pages?: number
+    records?: CategoryVO[]
+    size?: number
+    total?: number
+  }
+
+  type PageCommentVO_ = {
+    current?: number
+    pages?: number
+    records?: CommentVO[]
+    size?: number
+    total?: number
+  }
+
+  type PageLikeRecordVO_ = {
+    current?: number
+    pages?: number
+    records?: LikeRecordVO[]
+    size?: number
+    total?: number
+  }
+
   type PagePicture_ = {
     current?: number
     pages?: number
@@ -286,6 +539,13 @@ declare namespace API {
     total?: number
   }
 
+  type PageRequest = {
+    current?: number
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
+  }
+
   type PageSpace_ = {
     current?: number
     pages?: number
@@ -298,6 +558,14 @@ declare namespace API {
     current?: number
     pages?: number
     records?: SpaceVO[]
+    size?: number
+    total?: number
+  }
+
+  type PageTagVO_ = {
+    current?: number
+    pages?: number
+    records?: TagVO[]
     size?: number
     total?: number
   }
@@ -326,11 +594,13 @@ declare namespace API {
 
   type Picture = {
     category?: string
+    commentCount?: number
     createTime?: string
     editTime?: string
     id?: number
     introduction?: string
     isDelete?: number
+    likeCount?: number
     name?: string
     picColor?: string
     picFormat?: string
@@ -342,12 +612,14 @@ declare namespace API {
     reviewStatus?: number
     reviewTime?: string
     reviewerId?: number
+    shareCount?: number
     spaceId?: number
     tags?: string
     thumbnailUrl?: string
     updateTime?: string
     url?: string
     userId?: number
+    viewCount?: number
   }
 
   type PictureEditByBatchRequest = {
@@ -426,10 +698,13 @@ declare namespace API {
 
   type PictureVO = {
     category?: string
+    commentCount?: number
     createTime?: string
     editTime?: string
     id?: number
     introduction?: string
+    isLiked?: number
+    likeCount?: number
     name?: string
     permissionList?: string[]
     picColor?: string
@@ -438,6 +713,7 @@ declare namespace API {
     picScale?: number
     picSize?: number
     picWidth?: number
+    shareCount?: number
     spaceId?: number
     tags?: string[]
     thumbnailUrl?: string
@@ -445,11 +721,21 @@ declare namespace API {
     url?: string
     userId?: number
     userVO?: UserVO
+    viewCount?: number
   }
 
   type SearchPictureByColorRequest = {
     picColor?: string
     spaceId?: number
+  }
+
+  type SearchPictureByPictureRequest = {
+    id?: number
+  }
+
+  type searchTagUsingPOSTParams = {
+    /** tagName */
+    tagName: string
   }
 
   type Space = {
@@ -630,6 +916,14 @@ declare namespace API {
     userVO?: UserVO
   }
 
+  type TagVO = {
+    createTime?: string
+    editTime?: string
+    id?: number
+    tagName?: string
+    updateTime?: string
+  }
+
   type TaskMetrics = {
     failed?: number
     succeeded?: number
@@ -639,6 +933,11 @@ declare namespace API {
   type testDownloadFileUsingGETParams = {
     /** filepath */
     filepath?: string
+  }
+
+  type updateUserAvatarUsingPOSTParams = {
+    /** id */
+    id?: number
   }
 
   type uploadPictureUsingPOSTParams = {
@@ -651,6 +950,7 @@ declare namespace API {
   type User = {
     createTime?: string
     editTime?: string
+    email?: string
     id?: number
     isDelete?: number
     updateTime?: string
@@ -670,9 +970,23 @@ declare namespace API {
     userRole?: string
   }
 
+  type UserChangeEmailRequest = {
+    code?: string
+    newEmail?: string
+  }
+
   type UserLoginRequest = {
-    userAccount?: string
+    email?: string
+    inputVerifyCode?: string
+    serverVerifyCode?: string
     userPassword?: string
+  }
+
+  type UserModifyPassWordRequest = {
+    checkPassword?: string
+    id?: number
+    newPassword?: string
+    oldPassword?: string
   }
 
   type UserQueryRequest = {
@@ -689,8 +1003,21 @@ declare namespace API {
 
   type UserRegisterRequest = {
     checkPassword?: string
-    userAccount?: string
+    code?: string
+    email?: string
     userPassword?: string
+  }
+
+  type UserResetPasswordRequest = {
+    checkPassword?: string
+    code?: string
+    email?: string
+    newPassword?: string
+  }
+
+  type UserUnbanRequest = {
+    isUnban?: boolean
+    userId?: number
   }
 
   type UserUpdateRequest = {

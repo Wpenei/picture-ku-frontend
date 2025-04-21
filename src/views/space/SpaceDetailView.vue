@@ -235,7 +235,7 @@ const onColorChange = async (color: any) => {
 
 <style scoped>
 #spaceDetail {
-  margin: 40px 16px;
+
 }
 
 #spaceDetail :deep(.ant-typography) {

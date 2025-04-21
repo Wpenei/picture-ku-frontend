@@ -14,7 +14,7 @@
           <a-button type="primary" ghost href="/space_analyze?queryPublic=1" target="_blank">
             分析公共图库
           </a-button>
-          <a-button type="primary" ghost href="/space_analyze?queryAll=1" target="_blank" >
+          <a-button type="primary" ghost href="/space_analyze?queryAll=1" target="_blank">
             分析全空间
           </a-button>
         </a-space>
@@ -89,10 +89,10 @@
         </template>
         <!-- 空间类别 -->
         <template v-if="column.dataIndex === 'spaceType'">
-  <a-tag :color="getSpaceTypeColor(record.spaceType)">
-    {{ SPACE_TYPE_MAP[record.spaceType] }}
-  </a-tag>
-</template>
+          <a-tag :color="getSpaceTypeColor(record.spaceType)">
+            {{ SPACE_TYPE_MAP[record.spaceType] }}
+          </a-tag>
+        </template>
 
         <template v-if="column.dataIndex === 'createTime'">
           {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
@@ -101,9 +101,11 @@
           {{ dayjs(record.editTime).format('YYYY-MM-DD HH:mm:ss') }}
         </template>
         <template v-else-if="column.key === 'action'">
-            <a-space wrap>
-              <a-button type="link" :href="`/space_analyze?spaceId=${record.id}`" target="_blank"> 分析 </a-button>
-            <a-button :href="`/addSpace?id=${record.id}`"> 编辑</a-button>
+          <a-space wrap>
+            <a-button type="link" :href="`/space_analyze?spaceId=${record.id}`" target="_blank">
+              分析</a-button
+            >
+            <a-button :href="`/addSpace?id=${record.id}&type=${record.spaceType}`"> 编辑</a-button>
             <a-button danger @click="showDeleteConfirm(record.id)">删除</a-button>
           </a-space>
         </template>
@@ -124,7 +126,7 @@ import {
   SPACE_LEVEL_MAP,
   SPACE_LEVEL_OPTIONS,
   SPACE_TYPE_MAP,
-  SPACE_TYPE_OPTIONS
+  SPACE_TYPE_OPTIONS,
 } from '../../constants/space.ts'
 
 const columns = [
@@ -253,16 +255,15 @@ const showDeleteConfirm = (id: number) => {
 }
 // 添加在 setup 作用域内
 const getSpaceTypeColor = (type: number) => {
-  switch(type) {
-    case 0:  // 假设 0 表示公共空间
-      return 'default';
-    case 1:  // 假设 1 表示私有空间
-      return 'volcano';
+  switch (type) {
+    case 0: // 假设 0 表示公共空间
+      return 'default'
+    case 1: // 假设 1 表示私有空间
+      return 'volcano'
     default:
-      return 'default';
+      return 'default'
   }
 }
-
 </script>
 
 <style scoped>

@@ -38,7 +38,14 @@
     <div v-else>
       <!-- 图片展示 -->
       <!--    <PictureList :dataList="dataList" :loading="loading" />-->
-      <PictureListWaterfall :dataList="homePictureList" :loading="homeLoading" :showShare="true" />
+      <PictureListWaterfall
+        :dataList="homePictureList"
+        :loading="homeLoading"
+        :showShare="true"
+        :showView="true"
+        :showLike="true"
+        :showCommon="true"
+      />
 
       <!-- 加载信息 -->
       <div class="loadingInfo">
@@ -157,7 +164,6 @@ const fetchData = async () => {
   loadingLock.value = false
 }
 
-
 // 搜索数据
 const doSearch = () => {
   homeLoading.value = true
@@ -246,8 +252,7 @@ if (searchParams.current !== undefined && searchParams.pageSize !== undefined) {
 
 <style scoped>
 #homeView {
-  margin-top: 64px;
-  padding-right: 32px;
+  margin-top: 32px;
 }
 
 #homeView .search {
@@ -258,6 +263,7 @@ if (searchParams.current !== undefined && searchParams.pageSize !== undefined) {
 #homeView .tag-bar {
   margin-bottom: 32px;
 }
+
 .loading-spinner {
   display: flex;
   justify-content: center;

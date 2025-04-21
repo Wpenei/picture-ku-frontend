@@ -15,6 +15,8 @@ import SpaceAnalyze from '@/views/space/SpaceAnalyzeView.vue'
 import SpaceAnalyzeView from '@/views/space/SpaceAnalyzeView.vue'
 import SpaceUserManageView from '@/views/admin/SpaceUserManageView.vue'
 import UserInfoView from '@/views/user/UserInfoView.vue'
+import UserReleaseView from '@/views/user/UserReleaseView.vue'
+import TeamView from '@/views/TeamView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,9 +37,20 @@ const router = createRouter({
       component: RegisterView,
     },
     {
+      path: '/team',
+      name: '团队',
+      component: TeamView,
+    },
+    {
       path: '/user/info/:id',
       name: '个人中心',
       component: UserInfoView,
+      props:true,
+    },
+    {
+      path: '/user/release/:id',
+      name: '我的发布',
+      component: UserReleaseView,
       props:true,
     },
     {

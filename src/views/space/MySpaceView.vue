@@ -50,7 +50,6 @@ onMounted(() => {
 
 <style scoped>
 #mySpace {
-  padding: 16px;
 }
 
 #mySpace .search {

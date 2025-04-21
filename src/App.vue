@@ -17,8 +17,7 @@ dayjs.locale('zh-cn');
 // 使用Composition API 和setup 函数定义响应式数据
 const appLocale = zhCN;
 
-const loginUserStore = useLoginUserStore()
-loginUserStore.fetchLoginUser()
+
 
 </script>
 

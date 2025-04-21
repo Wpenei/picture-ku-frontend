@@ -94,8 +94,9 @@ const handleSubmit = async (values: any) => {
 const spaceType = computed(() => {
   if (route.query?.type) {
     return Number(route.query.type)
+  }else{
+    return SPACE_TYPE_ENUM.PRIVATE
   }
-  return SPACE_TYPE_ENUM.PRIVATE
 })
 
 

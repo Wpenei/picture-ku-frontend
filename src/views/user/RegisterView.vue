@@ -2,13 +2,34 @@
   <div id="RegisterView">
     <h2 class="title">共享云图库 - 用户注册</h2>
     <div class="desc">智能协同云图库</div>
-    <a-form :model="formState" name="normal_login" autocomplete="off" class="login-form" @finish="handleSubmit">
-      <a-form-item name="userAccount" :rules="[{ required: true, message: '账号不能为空!' }]">
-        <a-input v-model:value="formState.userAccount" placeholder="请输入账号">
+    <a-form
+      :model="formState"
+      name="normal_register"
+      autocomplete="off"
+      class="login-form"
+      @finish="handleSubmit"
+    >
+      <a-form-item name="email" :rules="[{ required: true, message: '邮箱不能为空!' }]">
+        <a-input v-model:value="formState.email" placeholder="请输入邮箱">
           <template #prefix>
             <UserOutlined class="site-form-item-icon" />
           </template>
         </a-input>
+      </a-form-item>
+
+      <a-form-item name="code" :rules="[{ required: true, message: '验证码不能为空!' }]">
+        <a-row justify="space-between">
+          <a-col :span="14">
+            <a-input v-model:value="formState.code" placeholder="请输入验证码">
+              <template #prefix>
+                <LockOutlined class="site-form-item-icon" />
+              </template>
+            </a-input>
+          </a-col>
+          <a-col :span="8" >
+            <a-button type="dashed" :disabled="codeDisabled" @click="fetchEmailCode" style="width: 100%">获取验证码</a-button>
+          </a-col>
+        </a-row>
       </a-form-item>
 
       <a-form-item
@@ -39,44 +60,74 @@
         </a-input-password>
       </a-form-item>
 
-      <!--  记住密码 && 忘记密码-->
-      <!--      <a-form-item>
-              <a-form-item name="remember" no-style>
-                <a-checkbox v-model:checked="formState.remember">记住我</a-checkbox>
-              </a-form-item>
-              <a class="forgot" href="">忘记密码</a>
-            </a-form-item>-->
-
       <a-form-item>
         <div class="tips">
           已有账号?
           <RouterLink to="/user/login">去登录</RouterLink>
         </div>
-        <a-button type="primary" html-type="submit" style="width: 100%"> 注册 </a-button>
+        <a-button :disabled="disabled" type="primary" html-type="submit" style="width: 100%"> 注册</a-button>
       </a-form-item>
     </a-form>
   </div>
 </template>
 <script lang="ts" setup>
-import { reactive, computed } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
-import { userRegisterUsingPost } from '@/api/userController.ts'
+import { userRegisterUsingPost, getEmailCodeUsingPost } from '@/api/userController.ts'
 import { message } from 'ant-design-vue'
-import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import router from '@/router'
 
-// 接收表单输入的值(注册账号,密码)
-const formState = reactive<API.UserRegisterRequest>({
-  userAccount: '',
+// 接收表单输入的值(注册账号,密码,验证码)
+const formState = reactive<API.UserRegisterRequest & { emailSuffix?: string }>({
+  email: '',
+  code: '',
   userPassword: '',
   checkPassword: '',
 })
+// 获取邮箱验证码
+const fetchEmailCode = async () => {
+  // 添加邮箱格式校验
+  if (!formState.email) {
+    message.error('邮箱不能为空')
+    return
+  }
+  if (!/^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$/.test(formState.email)) {
+    message.error('邮箱格式不正确')
+    return
+  }
 
-// 获取全局状态
-const loginUserStore = useLoginUserStore()
+  try {
+    const res = await getEmailCodeUsingPost({
+      email: formState.email,
+      type: 'register'
+    })
+
+    // 添加 1 秒延迟
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    if (res.data.code === 0) {
+      message.success('验证码已发送到您的邮箱')
+    } else {
+      message.error('获取验证码失败,' + res.data.message)
+    }
+  } catch (error) {
+    message.error('请求异常，请稍后重试')
+  }
+}
+const emailPrefix = ref<string>('')
+const emailSuffix = ref<string>('')
+
+const codeDisabled = computed(() => {
+  return !(formState.email )
+})
+const disabled = computed(() => {
+  return !(formState.email && formState.userPassword && formState.code && formState.checkPassword)
+})
+
 // 提交表单
 const handleSubmit = async (values: any) => {
-  if (values.checkPassword !== values.userPassword){
+  formState.email = emailPrefix.value + emailSuffix.value
+  if (values.checkPassword !== values.userPassword) {
     message.error('两次密码不一致')
     return
   }
@@ -98,24 +149,48 @@ const handleSubmit = async (values: any) => {
   /* 原有样式保留 */
   max-width: 450px;
   margin: 0 auto;
-  padding: 64px;
+  padding: 32px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .title {
   font-size: 32px;
   text-align: center;
   margin-bottom: 32px;
+  color: #333;
 }
 
 .desc {
   font-size: 16px;
   text-align: center;
   margin-bottom: 16px;
-  color: #bbb;
+  color: #666;
 }
 
-.forgot {
-  float: right;
+.login-form {
+  padding: 24px;
+}
+
+.a-form-item {
+  margin-bottom: 16px;
+}
+
+.a-button {
+  background-color: #1890ff;
+  border-color: #1890ff;
+  color: #fff;
+  font-weight: bold;
+}
+
+.a-button:hover {
+  background-color: #40a9ff;
+  border-color: #40a9ff;
 }
 
 .tips {

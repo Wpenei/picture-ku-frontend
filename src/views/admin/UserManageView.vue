@@ -1,5 +1,6 @@
 <template>
   <div id="adminManageView">
+    <h2>用户管理</h2>
     <a-form layout="inline" :model="searchParams" @finish="doSearch" class="search">
       <a-form-item label="账号">
         <a-input v-model:value="searchParams.userAccount" placeholder="输入账号" />
